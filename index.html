@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./index.css" />
+    <script src="./index.js" type="module" defer></script>
+    <title>Slider npm package</title>
+  </head>
+  <body>
+    <div class="slider">
+      <form class="slider-form">
+        <div class="slider-form__fields">
+          <label class="slider-form__field" data-type="show">
+            <p class="error"></p>
+            <span class="label">Number of displayed items</span>
+            <input type="number" />
+          </label>
+          <label class="slider-form__field" data-type="swipe">
+            <p class="error"></p>
+            <span class="label">Number of swipe items</span>
+            <input type="number" />
+          </label>
+          <label class="slider-form__field" data-type="amount">
+            <p class="error"></p>
+            <span class="label">Number of items</span>
+            <input type="number" />
+          </label>
+        </div>
+      </form>
+      <div class="slides"></div>
+      <div class="slider-buttons">
+        <button class="slider-button prev">prev</button>
+        <button class="slider-button next">next</button>
+      </div>
+    </div>
+  </body>
+</html>
