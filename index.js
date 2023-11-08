@@ -103,6 +103,7 @@ function setErrors() {
 function validation() {
   const fieldSwipe = FORM.fields.find((field) => field.type === "swipe");
   const fieldShow = FORM.fields.find((field) => field.type === "show");
+  const fieldAmount = FORM.fields.find((field) => field.type === "amount");
 
   FORM.fields.forEach((field) => {
     switch (field.type) {
@@ -111,6 +112,15 @@ function validation() {
 
         if (!field.value || field.value === 0) {
           return (field.isValid = false);
+        }
+
+        if (field.value >= 10) {
+          field.isValid = false;
+          return (field.error = "Don't mess around");
+        }
+
+        if (field.value + fieldSwipe.value > fieldAmount.value) {
+          return (fieldAmount.isValid = false);
         }
 
         if (field.value < fieldSwipe.value) {
@@ -131,6 +141,10 @@ function validation() {
           return (field.isValid = false);
         }
 
+        if (field.value + fieldShow.value > fieldAmount.value) {
+          return (fieldAmount.isValid = false);
+        }
+
         if (field.value > fieldShow.value) {
           field.isValid = false;
           fieldShow.isValid = false;
@@ -148,12 +162,14 @@ function validation() {
           return (field.isValid = false);
         }
 
-        if (field.value < fieldShow + fieldSwipe) {
+        if (field.value < fieldShow.value + fieldSwipe.value) {
           field.isValid = false;
         }
         break;
     }
   });
+
+  console.log(FORM);
 
   setErrors();
 
@@ -208,6 +224,9 @@ function getRandomColor() {
 }
 
 function checkButtons() {
+  btnPrev.removeAttribute("disabled");
+  btnNext.removeAttribute("disabled");
+
   if (numberCurrentSlide === showSlides) {
     return btnPrev.setAttribute("disabled", true);
   }
@@ -215,9 +234,6 @@ function checkButtons() {
   if (numberCurrentSlide === amountSlides) {
     return btnNext.setAttribute("disabled", true);
   }
-
-  btnPrev.removeAttribute("disabled");
-  btnNext.removeAttribute("disabled");
 }
 
 function checkPosition(type) {
