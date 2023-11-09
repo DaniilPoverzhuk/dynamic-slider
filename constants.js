@@ -17,3 +17,9 @@ export const colors = [
   "#FF00FF",
   "#800080",
 ];
+
+export const TYPES = {
+  SHOW: "show",
+  SWIPE: "swipe",
+  AMOUNT: "amount",
+};

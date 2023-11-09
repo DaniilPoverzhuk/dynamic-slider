@@ -1,7 +1,7 @@
-import { colors } from "./constants.js";
+import { TYPES, colors } from "./constants.js";
 
 let amountSlides = 6;
-let showSlides = 2;
+let showSlides = 3;
 let swipeSlides = 2;
 
 // form
@@ -10,7 +10,7 @@ const FORM = {
   fields: [
     {
       type: "show",
-      value: 0,
+      value: showSlides,
       isValid: false,
       error: "Enter valid value!",
       errorElem: document.querySelector('[data-type="show"] .error'),
@@ -18,7 +18,7 @@ const FORM = {
     },
     {
       type: "swipe",
-      value: 0,
+      value: swipeSlides,
       isValid: false,
       error: "Enter valid value!",
       errorElem: document.querySelector('[data-type="swipe"] .error'),
@@ -26,7 +26,7 @@ const FORM = {
     },
     {
       type: "amount",
-      value: 0,
+      value: amountSlides,
       isValid: false,
       error: "Enter valid value!",
       errorElem: document.querySelector('[data-type="amount"] .error'),
@@ -55,6 +55,9 @@ function setFieldsForm() {
 
   fields.forEach((field) => {
     const type = field.getAttribute("data-type");
+    const input = field.querySelector("input");
+
+    setDefaultValue(type, input);
 
     field.addEventListener("input", (event) =>
       setFieldValue(type, +event.target.value)
@@ -72,13 +75,13 @@ function setFieldValue(type, value) {
 
 function setValue(type, value) {
   switch (type) {
-    case "show":
+    case TYPES.SHOW:
       showSlides = value;
       break;
-    case "swipe":
+    case TYPES.SWIPE:
       swipeSlides = value;
       break;
-    case "amount":
+    case TYPES.AMOUNT:
       amountSlides = value;
       break;
   }
@@ -87,6 +90,20 @@ function setValue(type, value) {
   step = swipeSlides * slideWidth;
   numberCurrentSlide = showSlides;
   position = 0;
+}
+
+function setDefaultValue(type, input) {
+  switch (type) {
+    case TYPES.SHOW:
+      input.value = showSlides;
+      break;
+    case TYPES.SWIPE:
+      input.value = swipeSlides;
+      break;
+    case TYPES.AMOUNT:
+      input.value = amountSlides;
+      break;
+  }
 }
 
 function setErrors() {
@@ -107,7 +124,7 @@ function validation() {
 
   FORM.fields.forEach((field) => {
     switch (field.type) {
-      case "show":
+      case TYPES.SHOW:
         field.isValid = true;
 
         if (!field.value || field.value === 0) {
@@ -124,9 +141,12 @@ function validation() {
         }
 
         if (field.value < fieldSwipe.value) {
+          console.log("123123");
           field.isValid = false;
           fieldSwipe.isValid = false;
+          return;
         }
+        console.log("123123");
 
         if (field.value >= fieldSwipe.value) {
           field.isValid = true;
@@ -134,7 +154,7 @@ function validation() {
         }
 
         break;
-      case "swipe":
+      case TYPES.SWIPE:
         field.isValid = true;
 
         if (!field.value || field.value === 0) {
@@ -155,7 +175,7 @@ function validation() {
           fieldShow.isValid = true;
         }
         break;
-      case "amount":
+      case TYPES.AMOUNT:
         field.isValid = true;
 
         if (!field.value || field.value === 0) {
@@ -169,9 +189,9 @@ function validation() {
     }
   });
 
-  console.log(FORM);
-
   setErrors();
+
+  console.log(FORM);
 
   if (getStatusValidForm()) {
     FORM.fields.forEach((field) => setValue(field.type, field.value));
