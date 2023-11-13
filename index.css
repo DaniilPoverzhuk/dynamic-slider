@@ -78,6 +78,8 @@ body {
   justify-content: space-between;
 
   overflow: hidden;
+
+  cursor: grab;
 }
 
 .slide {
@@ -91,6 +93,8 @@ body {
   color: #fff;
 
   transition: 0.4s;
+
+  user-select: none;
 }
 
 .slide.hide {

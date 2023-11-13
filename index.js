@@ -141,12 +141,10 @@ function validation() {
         }
 
         if (field.value < fieldSwipe.value) {
-          console.log("123123");
           field.isValid = false;
           fieldSwipe.isValid = false;
           return;
         }
-        console.log("123123");
 
         if (field.value >= fieldSwipe.value) {
           field.isValid = true;
@@ -191,8 +189,6 @@ function validation() {
 
   setErrors();
 
-  console.log(FORM);
-
   if (getStatusValidForm()) {
     FORM.fields.forEach((field) => setValue(field.type, field.value));
     initSlider();
@@ -214,8 +210,17 @@ let step = swipeSlides * slideWidth;
 let position = 0;
 let numberCurrentSlide = showSlides;
 
+let positionTouchXMove = 0;
+let positionTouchXStart = 0;
+
+let isTouched = false;
+
 btnPrev.addEventListener("click", () => changeSlide("prev"));
 btnNext.addEventListener("click", () => changeSlide("next"));
+
+slidesContainer.addEventListener("touchstart", touchStart);
+slidesContainer.addEventListener("touchend", touchEnd);
+slidesContainer.addEventListener("touchmove", touchMove);
 
 function initSlider() {
   if (slidesContainer.children.length) {
@@ -241,6 +246,67 @@ function getPropertyValue(elem, property) {
 
 function getRandomColor() {
   return colors[Math.round(Math.random() * (colors.length - 1))];
+}
+
+function isAvailableTouch(type) {
+  if (numberCurrentSlide === showSlides && type === "prev") {
+    return false;
+  }
+
+  if (numberCurrentSlide === slides.length && type === "next") {
+    return false;
+  }
+
+  return true;
+}
+
+function touchStart(event) {
+  positionTouchXStart = event.changedTouches[0].clientX;
+  isTouched = true;
+}
+
+function touchEnd() {
+  if (!isAvailableTouch("prev")) {
+    position = 0;
+    setPositionForSlide();
+    return;
+  }
+
+  if (!isAvailableTouch("next")) {
+    position = (slides.length - showSlides) * slideWidth * -1;
+    setPositionForSlide();
+    return;
+  }
+}
+
+function touchMove(event) {
+  if (isTouched) {
+    positionTouchXMove = event.changedTouches[0].clientX;
+    const scrolledPosition = positionTouchXStart - positionTouchXMove;
+
+    const isAvailableTouchNext = () =>
+      positionTouchXStart > positionTouchXMove && isAvailableTouch("next");
+
+    if (!isAvailableTouch("prev") && scrolledPosition < 0) {
+      position += 15;
+      setPositionForSlide();
+    }
+
+    if (!isAvailableTouch("next") && scrolledPosition > 0) {
+      position -= 15;
+      setPositionForSlide();
+    }
+
+    if (Math.abs(scrolledPosition) >= slideWidth / 2) {
+      if (isAvailableTouchNext()) {
+        return changeSlide("next");
+      }
+
+      if (isAvailableTouch("prev")) {
+        return changeSlide("prev");
+      }
+    }
+  }
 }
 
 function checkButtons() {
@@ -303,6 +369,8 @@ function changePosition(type) {
 }
 
 function changeSlide(type) {
+  isTouched = false;
+
   changePosition(type);
   setPositionForSlide();
   checkButtons();
@@ -322,6 +390,8 @@ function createSlide(width, idx) {
 }
 
 function setPositionForSlide() {
+  isTouched = false;
+
   for (let idx = 0; idx < slides.length; idx++) {
     const slide = slides[idx];
     slide.style.transform = `translateX(${position}px)`;
