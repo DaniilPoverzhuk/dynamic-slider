@@ -78,8 +78,6 @@ body {
   justify-content: space-between;
 
   overflow: hidden;
-
-  cursor: grab;
 }
 
 .slide {

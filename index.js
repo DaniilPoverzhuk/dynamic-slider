@@ -1,8 +1,10 @@
-import { TYPES, colors } from "./constants.js";
+import { TYPES } from "./constants.js";
 
 let amountSlides = 6;
 let showSlides = 3;
 let swipeSlides = 2;
+
+const maxAmountSlides = 100;
 
 // form
 
@@ -183,6 +185,10 @@ function validation() {
         if (field.value < fieldShow.value + fieldSwipe.value) {
           field.isValid = false;
         }
+
+        if (field.value > maxAmountSlides) {
+          field.isValid = false;
+        }
         break;
     }
   });
@@ -202,6 +208,9 @@ const slidesContainer = document.querySelector(".slides");
 const btnPrev = document.querySelector(".slider-button.prev");
 const btnNext = document.querySelector(".slider-button.next");
 const slides = [];
+
+const timeoutSlide = 2000;
+let interval = null;
 
 const slidesContainerWidth = getPropertyValue(slidesContainer, "width");
 let slideWidth = slidesContainerWidth / showSlides;
@@ -238,6 +247,24 @@ function initSlider() {
   slides.push(...document.querySelectorAll(".slide"));
 
   checkButtons();
+  setSlidesTimeout();
+}
+
+function setSlidesTimeout() {
+  interval = setInterval(() => {
+    changeSlide("next");
+    if (numberCurrentSlide === slides.length) {
+      let timeout = setTimeout(() => {
+        position = 0;
+        numberCurrentSlide = showSlides;
+        setPositionForSlide();
+        checkButtons();
+        clearTimeout(timeout);
+        setSlidesTimeout();
+      }, timeoutSlide);
+      clearInterval(interval);
+    }
+  }, timeoutSlide);
 }
 
 function getPropertyValue(elem, property) {
@@ -245,7 +272,16 @@ function getPropertyValue(elem, property) {
 }
 
 function getRandomColor() {
-  return colors[Math.round(Math.random() * (colors.length - 1))];
+  let result = "#";
+
+  for (let i = 0; i < 6; i++) {
+    const number = Math.round(Math.random() * 15);
+    const hex = number.toString(16);
+
+    result += hex;
+  }
+
+  return result;
 }
 
 function isAvailableTouch(type) {
