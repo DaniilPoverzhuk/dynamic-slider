@@ -1,4 +1,4 @@
-import { TYPES } from "./constants.js";
+import { TYPES, OPTIONS_TYPE, OPTIONS } from "./constants.js";
 
 let amountSlides = 6;
 let showSlides = 3;
@@ -6,14 +6,15 @@ let swipeSlides = 2;
 
 const maxAmountSlides = 100;
 
-// form
+const btnSave = document.querySelector(".slider-form__button");
+const options = document.querySelectorAll(".slider-form__list-item");
 
 const FORM = {
   fields: [
     {
       type: "show",
       value: showSlides,
-      isValid: false,
+      isValid: true,
       error: "Enter valid value!",
       errorElem: document.querySelector('[data-type="show"] .error'),
       elem: document.querySelector('[data-type="show"]'),
@@ -21,7 +22,7 @@ const FORM = {
     {
       type: "swipe",
       value: swipeSlides,
-      isValid: false,
+      isValid: true,
       error: "Enter valid value!",
       errorElem: document.querySelector('[data-type="swipe"] .error'),
       elem: document.querySelector('[data-type="swipe"]'),
@@ -29,13 +30,26 @@ const FORM = {
     {
       type: "amount",
       value: amountSlides,
-      isValid: false,
+      isValid: true,
       error: "Enter valid value!",
       errorElem: document.querySelector('[data-type="amount"] .error'),
       elem: document.querySelector('[data-type="amount"]'),
     },
   ],
+  selectedOptions: [
+    { label: "auto-play", checked: false, isSetValue: false },
+    { label: "loop", checked: false, isSetValue: false },
+    { label: "behavior", checked: false, isSetValue: false },
+  ],
 };
+
+btnSave.addEventListener("click", saveChanges);
+
+options.forEach((option, idx) =>
+  option.addEventListener("change", () => toggleOption(idx))
+);
+
+// form
 
 function getStatusValidForm() {
   let result = true;
@@ -119,6 +133,31 @@ function setErrors() {
   });
 }
 
+function saveChanges(event) {
+  event.preventDefault();
+
+  if (getStatusValidForm()) {
+    FORM.fields.forEach((field) => setValue(field.type, field.value));
+    initSlider();
+  }
+}
+
+function toggleOption(idx) {
+  const item = OPTIONS[idx];
+
+  FORM.selectedOptions = FORM.selectedOptions.map((option) => {
+    if (option.label === item) {
+      option.checked = !option.checked;
+
+      if (!option.checked) {
+        option.isSetValue = false;
+      }
+    }
+
+    return option;
+  });
+}
+
 function validation() {
   const fieldSwipe = FORM.fields.find((field) => field.type === "swipe");
   const fieldShow = FORM.fields.find((field) => field.type === "show");
@@ -194,11 +233,6 @@ function validation() {
   });
 
   setErrors();
-
-  if (getStatusValidForm()) {
-    FORM.fields.forEach((field) => setValue(field.type, field.value));
-    initSlider();
-  }
 }
 
 setFieldsForm();
@@ -207,10 +241,12 @@ setFieldsForm();
 const slidesContainer = document.querySelector(".slides");
 const btnPrev = document.querySelector(".slider-button.prev");
 const btnNext = document.querySelector(".slider-button.next");
-const slides = [];
+const hideSlides = [];
+let slides = [];
 
 const timeoutSlide = 2000;
 let interval = null;
+let timeout = null;
 
 const slidesContainerWidth = getPropertyValue(slidesContainer, "width");
 let slideWidth = slidesContainerWidth / showSlides;
@@ -231,40 +267,98 @@ slidesContainer.addEventListener("touchstart", touchStart);
 slidesContainer.addEventListener("touchend", touchEnd);
 slidesContainer.addEventListener("touchmove", touchMove);
 
-function initSlider() {
-  if (slidesContainer.children.length) {
-    for (let idx = slidesContainer.children.length - 1; idx >= 0; idx--) {
-      slidesContainer.children.item(idx).remove();
-    }
-  }
-
-  if (!slidesContainer.children.length) {
-    for (let idx = 0; idx < amountSlides; idx++) {
-      createSlide(slideWidth, idx + 1);
-    }
-  }
-
-  slides.push(...document.querySelectorAll(".slide"));
-
+function initSlider(type) {
+  deletePrevSlides();
+  createSlides();
   checkButtons();
-  setSlidesTimeout();
+
+  slides = [...document.querySelectorAll(".slide")];
+
+  setOptions(type);
 }
 
 function setSlidesTimeout() {
   interval = setInterval(() => {
     changeSlide("next");
+
     if (numberCurrentSlide === slides.length) {
-      let timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         position = 0;
         numberCurrentSlide = showSlides;
+
         setPositionForSlide();
         checkButtons();
-        clearTimeout(timeout);
         setSlidesTimeout();
+
+        clearTimeout(timeout);
       }, timeoutSlide);
+
       clearInterval(interval);
     }
   }, timeoutSlide);
+}
+
+function setOptions(type) {
+  FORM.selectedOptions.forEach((option) => {
+    if (option.checked && !option.isSetValue) {
+      setSelectedOptions(option);
+    }
+
+    if (!option.checked && type !== "mount") {
+      setDeletedOption(option);
+    }
+  });
+}
+
+function setSelectedOptions(option) {
+  switch (option.label) {
+    case OPTIONS_TYPE.AUTO_PLAY:
+      setSlidesTimeout();
+      option.isSetValue = true;
+      return;
+    case OPTIONS_TYPE.LOOP:
+      return;
+    case OPTIONS_TYPE.BEHAVIOR:
+      setBehavior();
+      return;
+  }
+}
+
+function setDeletedOption(option) {
+  switch (option.label) {
+    case OPTIONS_TYPE.AUTO_PLAY:
+      clearInterval(interval);
+      clearTimeout(timeout);
+
+      option.isSetValue = false;
+      return;
+    case OPTIONS_TYPE.LOOP:
+      return;
+    case OPTIONS_TYPE.BEHAVIOR:
+      setBehavior("delete");
+      return;
+  }
+}
+
+function setBehavior(type) {
+  slides.forEach((slide) => {
+    slide.classList.add("behavior");
+
+    if (type === "delete") {
+      slide.classList.remove("behavior");
+    }
+  });
+}
+
+function setPositionForSlide() {
+  isTouched = false;
+
+  for (let idx = 0; idx < slides.length; idx++) {
+    const slide = slides[idx];
+
+    console.log(slide);
+    slide.style.transform = `translateX(${position}px)`;
+  }
 }
 
 function getPropertyValue(elem, property) {
@@ -412,6 +506,14 @@ function changeSlide(type) {
   checkButtons();
 }
 
+function createSlides() {
+  if (!slidesContainer.children.length) {
+    for (let idx = 0; idx < amountSlides; idx++) {
+      createSlide(slideWidth, idx + 1);
+    }
+  }
+}
+
 function createSlide(width, idx) {
   const slide = document.createElement("div");
 
@@ -425,13 +527,12 @@ function createSlide(width, idx) {
   slidesContainer.appendChild(slide);
 }
 
-function setPositionForSlide() {
-  isTouched = false;
-
-  for (let idx = 0; idx < slides.length; idx++) {
-    const slide = slides[idx];
-    slide.style.transform = `translateX(${position}px)`;
+function deletePrevSlides() {
+  if (slidesContainer.children.length) {
+    for (let idx = slidesContainer.children.length - 1; idx >= 0; idx--) {
+      slidesContainer.children.item(idx).remove();
+    }
   }
 }
 
-initSlider();
+initSlider("mount");

@@ -70,6 +70,42 @@ body {
   opacity: 1;
 }
 
+.slider-form__abilities {
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-form__list {
+  display: flex;
+  gap: 10px;
+
+  list-style-type: none;
+}
+
+.slider-form__list-item {
+  display: flex;
+  align-items: center;
+
+  cursor: pointer;
+}
+
+.slider-form__list-item label {
+  cursor: pointer;
+  user-select: none;
+}
+
+.slider-form__list-item input {
+  cursor: pointer;
+}
+
+.slider-form__button {
+  width: 100%;
+  max-width: 200px;
+
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
 .slides {
   height: 120px;
   width: 100%;
@@ -90,9 +126,11 @@ body {
   font-size: 30px;
   color: #fff;
 
-  transition: 0.4s;
-
   user-select: none;
+}
+
+.slide.behavior {
+  transition: 0.4s;
 }
 
 .slide.hide {
