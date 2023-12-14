@@ -1,5 +1,7 @@
 import { TYPES, OPTIONS_TYPE, OPTIONS } from "./constants.js";
 
+import { getPropertyValue, getRandomColor } from "./utils.js";
+
 let amountSlides = 6;
 let showSlides = 3;
 let swipeSlides = 2;
@@ -238,10 +240,11 @@ function validation() {
 setFieldsForm();
 
 // slider
+
 const slidesContainer = document.querySelector(".slides");
 const btnPrev = document.querySelector(".slider-button.prev");
 const btnNext = document.querySelector(".slider-button.next");
-const hideSlides = [];
+
 let slides = [];
 
 const timeoutSlide = 2000;
@@ -267,14 +270,14 @@ slidesContainer.addEventListener("touchstart", touchStart);
 slidesContainer.addEventListener("touchend", touchEnd);
 slidesContainer.addEventListener("touchmove", touchMove);
 
-function initSlider(type) {
+function initSlider() {
   deletePrevSlides();
   createSlides();
   checkButtons();
 
   slides = [...document.querySelectorAll(".slide")];
 
-  setOptions(type);
+  setOptions();
 }
 
 function setSlidesTimeout() {
@@ -298,14 +301,10 @@ function setSlidesTimeout() {
   }, timeoutSlide);
 }
 
-function setOptions(type) {
+function setOptions() {
   FORM.selectedOptions.forEach((option) => {
     if (option.checked && !option.isSetValue) {
       setSelectedOptions(option);
-    }
-
-    if (!option.checked && type !== "mount") {
-      setDeletedOption(option);
     }
   });
 }
@@ -324,21 +323,21 @@ function setSelectedOptions(option) {
   }
 }
 
-function setDeletedOption(option) {
-  switch (option.label) {
-    case OPTIONS_TYPE.AUTO_PLAY:
-      clearInterval(interval);
-      clearTimeout(timeout);
+// function setDeletedOption(option) {
+//   switch (option.label) {
+//     case OPTIONS_TYPE.AUTO_PLAY:
+//       clearInterval(interval);
+//       clearTimeout(timeout);
 
-      option.isSetValue = false;
-      return;
-    case OPTIONS_TYPE.LOOP:
-      return;
-    case OPTIONS_TYPE.BEHAVIOR:
-      setBehavior("delete");
-      return;
-  }
-}
+//       option.isSetValue = false;
+//       return;
+//     case OPTIONS_TYPE.LOOP:
+//       return;
+//     case OPTIONS_TYPE.BEHAVIOR:
+//       setBehavior("delete");
+//       return;
+//   }
+// }
 
 function setBehavior(type) {
   slides.forEach((slide) => {
@@ -356,26 +355,8 @@ function setPositionForSlide() {
   for (let idx = 0; idx < slides.length; idx++) {
     const slide = slides[idx];
 
-    console.log(slide);
     slide.style.transform = `translateX(${position}px)`;
   }
-}
-
-function getPropertyValue(elem, property) {
-  return +window.getComputedStyle(elem)[property].slice(0, -2);
-}
-
-function getRandomColor() {
-  let result = "#";
-
-  for (let i = 0; i < 6; i++) {
-    const number = Math.round(Math.random() * 15);
-    const hex = number.toString(16);
-
-    result += hex;
-  }
-
-  return result;
 }
 
 function isAvailableTouch(type) {
@@ -535,4 +516,4 @@ function deletePrevSlides() {
   }
 }
 
-initSlider("mount");
+initSlider();
