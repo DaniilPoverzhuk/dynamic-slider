@@ -39,9 +39,9 @@ const FORM = {
     },
   ],
   selectedOptions: [
-    { label: "auto-play", checked: false, isSetValue: false },
-    { label: "loop", checked: false, isSetValue: false },
-    { label: "behavior", checked: false, isSetValue: false },
+    { label: "auto-play", checked: false },
+    { label: "loop", checked: false },
+    { label: "behavior", checked: false },
   ],
 };
 
@@ -150,10 +150,6 @@ function toggleOption(idx) {
   FORM.selectedOptions = FORM.selectedOptions.map((option) => {
     if (option.label === item) {
       option.checked = !option.checked;
-
-      if (!option.checked) {
-        option.isSetValue = false;
-      }
     }
 
     return option;
@@ -161,9 +157,7 @@ function toggleOption(idx) {
 }
 
 function validation() {
-  const fieldSwipe = FORM.fields.find((field) => field.type === "swipe");
-  const fieldShow = FORM.fields.find((field) => field.type === "show");
-  const fieldAmount = FORM.fields.find((field) => field.type === "amount");
+  const [fieldShow, fieldSwipe, fieldAmount] = FORM.fields;
 
   FORM.fields.forEach((field) => {
     switch (field.type) {
@@ -248,20 +242,19 @@ const btnNext = document.querySelector(".slider-button.next");
 let slides = [];
 
 const timeoutSlide = 2000;
-let interval = null;
-let timeout = null;
 
 const slidesContainerWidth = getPropertyValue(slidesContainer, "width");
 let slideWidth = slidesContainerWidth / showSlides;
 
 let step = swipeSlides * slideWidth;
-let position = 0;
 let numberCurrentSlide = showSlides;
 
+let position = 0;
 let positionTouchXMove = 0;
 let positionTouchXStart = 0;
 
 let isTouched = false;
+let isLoop = false;
 
 btnPrev.addEventListener("click", () => changeSlide("prev"));
 btnNext.addEventListener("click", () => changeSlide("next"));
@@ -274,36 +267,19 @@ function initSlider() {
   deletePrevSlides();
   createSlides();
   checkButtons();
-
-  slides = [...document.querySelectorAll(".slide")];
-
   setOptions();
 }
 
-function setSlidesTimeout() {
+function setAutoPlay() {
   interval = setInterval(() => {
     changeSlide("next");
-
-    if (numberCurrentSlide === slides.length) {
-      timeout = setTimeout(() => {
-        position = 0;
-        numberCurrentSlide = showSlides;
-
-        setPositionForSlide();
-        checkButtons();
-        setSlidesTimeout();
-
-        clearTimeout(timeout);
-      }, timeoutSlide);
-
-      clearInterval(interval);
-    }
   }, timeoutSlide);
 }
 
 function setOptions() {
   FORM.selectedOptions.forEach((option) => {
-    if (option.checked && !option.isSetValue) {
+    if (option.checked) {
+      console.log(option);
       setSelectedOptions(option);
     }
   });
@@ -312,10 +288,10 @@ function setOptions() {
 function setSelectedOptions(option) {
   switch (option.label) {
     case OPTIONS_TYPE.AUTO_PLAY:
-      setSlidesTimeout();
-      option.isSetValue = true;
+      setAutoPlay();
       return;
     case OPTIONS_TYPE.LOOP:
+      isLoop = true;
       return;
     case OPTIONS_TYPE.BEHAVIOR:
       setBehavior();
@@ -323,41 +299,129 @@ function setSelectedOptions(option) {
   }
 }
 
-// function setDeletedOption(option) {
-//   switch (option.label) {
-//     case OPTIONS_TYPE.AUTO_PLAY:
-//       clearInterval(interval);
-//       clearTimeout(timeout);
-
-//       option.isSetValue = false;
-//       return;
-//     case OPTIONS_TYPE.LOOP:
-//       return;
-//     case OPTIONS_TYPE.BEHAVIOR:
-//       setBehavior("delete");
-//       return;
-//   }
-// }
-
-function setBehavior(type) {
-  slides.forEach((slide) => {
-    slide.classList.add("behavior");
-
-    if (type === "delete") {
-      slide.classList.remove("behavior");
-    }
-  });
+function setBehavior() {
+  slides.forEach((slide) => slide.classList.add("behavior"));
 }
 
 function setPositionForSlide() {
   isTouched = false;
 
-  for (let idx = 0; idx < slides.length; idx++) {
-    const slide = slides[idx];
+  slides.forEach(
+    (slide) => (slide.style.transform = `translateX(${position}px)`)
+  );
+}
 
-    slide.style.transform = `translateX(${position}px)`;
+function checkButtons() {
+  btnPrev.removeAttribute("disabled");
+  btnNext.removeAttribute("disabled");
+
+  if (numberCurrentSlide === showSlides) {
+    return btnPrev.setAttribute("disabled", true);
+  }
+
+  if (isLoop) {
+    return btnNext.removeAttribute("disabled");
+  }
+
+  if (numberCurrentSlide === amountSlides) {
+    return btnNext.setAttribute("disabled", true);
   }
 }
+
+function changePosition(type) {
+  if (type === "next") return changePositionByNext();
+
+  if (type === "prev") changePositionByPrev();
+}
+
+// Начал делать фичу - loop
+
+function changePositionByNext() {
+  if (numberCurrentSlide === amountSlides) {
+    numberCurrentSlide = showSlides;
+    return (position = 0);
+  }
+
+  const expectedNumberSlide = numberCurrentSlide + swipeSlides;
+
+  if (expectedNumberSlide <= amountSlides || isLoop) {
+    if (expectedNumberSlide > amountSlides) {
+      amountSlides *= 2;
+      numberCurrentSlide = (amountSlides - showSlides) % swipeSlides;
+      position -= step;
+      return createSlides();
+    }
+
+    numberCurrentSlide += swipeSlides;
+    return (position -= step);
+  }
+
+  const availableSwipes = amountSlides - numberCurrentSlide;
+
+  numberCurrentSlide += availableSwipes;
+
+  position -= getCustomStep(availableSwipes);
+}
+
+function changePositionByPrev() {
+  if (numberCurrentSlide - showSlides - swipeSlides >= 0) {
+    numberCurrentSlide -= swipeSlides;
+    return (position += step);
+  }
+
+  const availableSwipes = Math.abs(
+    numberCurrentSlide - showSlides - swipeSlides
+  );
+
+  numberCurrentSlide -= availableSwipes;
+
+  position += getCustomStep(availableSwipes);
+}
+
+function changeSlide(type) {
+  isTouched = false;
+
+  changePosition(type);
+  setPositionForSlide();
+  checkButtons();
+}
+
+function createSlides() {
+  for (let idx = 0; idx < amountSlides; idx++) {
+    const slide = createSlide(slideWidth, idx + 1);
+    slidesContainer.appendChild(slide);
+  }
+
+  slides = [...document.querySelectorAll(".slide")];
+}
+
+function createSlide(width, content) {
+  const slide = document.createElement("div");
+
+  slide.classList.add("slide");
+
+  slide.style.backgroundColor = getRandomColor();
+  slide.style.minWidth = `${width}px`;
+  slide.style.transform = `translateX(${position}px)`;
+
+  slide.textContent = content;
+
+  return slide;
+}
+
+function deletePrevSlides() {
+  if (slidesContainer.children.length) {
+    for (let idx = slidesContainer.children.length - 1; idx >= 0; idx--) {
+      slidesContainer.children.item(idx).remove();
+    }
+  }
+}
+
+function getCustomStep(numberSwipes) {
+  return slideWidth * numberSwipes;
+}
+
+// Mobile
 
 function isAvailableTouch(type) {
   if (numberCurrentSlide === showSlides && type === "prev") {
@@ -416,102 +480,6 @@ function touchMove(event) {
       if (isAvailableTouch("prev")) {
         return changeSlide("prev");
       }
-    }
-  }
-}
-
-function checkButtons() {
-  btnPrev.removeAttribute("disabled");
-  btnNext.removeAttribute("disabled");
-
-  if (numberCurrentSlide === showSlides) {
-    return btnPrev.setAttribute("disabled", true);
-  }
-
-  if (numberCurrentSlide === amountSlides) {
-    return btnNext.setAttribute("disabled", true);
-  }
-}
-
-function checkPosition(type) {
-  if (type === "next") {
-    if (numberCurrentSlide > amountSlides) {
-      const difference = amountSlides - (numberCurrentSlide - swipeSlides);
-      const step = difference * slideWidth;
-
-      numberCurrentSlide -= swipeSlides - difference;
-      position -= step;
-
-      return false;
-    }
-
-    return true;
-  }
-
-  if (type === "prev") {
-    const isSliderWithRemains = () =>
-      numberCurrentSlide + swipeSlides === amountSlides &&
-      (amountSlides - showSlides) % swipeSlides;
-
-    if (isSliderWithRemains()) {
-      const difference = (amountSlides - showSlides) % swipeSlides;
-      const step = difference * slideWidth;
-
-      numberCurrentSlide = amountSlides - difference;
-      position += step;
-
-      return false;
-    }
-
-    return true;
-  }
-}
-
-function changePosition(type) {
-  if (type === "prev") {
-    numberCurrentSlide -= swipeSlides;
-    return checkPosition("prev") && (position += step);
-  }
-
-  if (type === "next") {
-    numberCurrentSlide += swipeSlides;
-    return checkPosition("next") && (position -= step);
-  }
-}
-
-function changeSlide(type) {
-  isTouched = false;
-
-  changePosition(type);
-  setPositionForSlide();
-  checkButtons();
-}
-
-function createSlides() {
-  if (!slidesContainer.children.length) {
-    for (let idx = 0; idx < amountSlides; idx++) {
-      createSlide(slideWidth, idx + 1);
-    }
-  }
-}
-
-function createSlide(width, idx) {
-  const slide = document.createElement("div");
-
-  slide.classList.add("slide");
-
-  slide.style.backgroundColor = getRandomColor();
-  slide.style.minWidth = `${width}px`;
-
-  slide.innerHTML = idx;
-
-  slidesContainer.appendChild(slide);
-}
-
-function deletePrevSlides() {
-  if (slidesContainer.children.length) {
-    for (let idx = slidesContainer.children.length - 1; idx >= 0; idx--) {
-      slidesContainer.children.item(idx).remove();
     }
   }
 }
