@@ -138,6 +138,8 @@ function setErrors() {
 function saveChanges(event) {
   event.preventDefault();
 
+  clearInterval(interval); // обнуление setInterval
+
   if (getStatusValidForm()) {
     FORM.fields.forEach((field) => setValue(field.type, field.value));
     initSlider();
@@ -256,6 +258,8 @@ let positionTouchXStart = 0;
 let isTouched = false;
 let isLoop = false;
 
+let interval = null;
+
 btnPrev.addEventListener("click", () => changeSlide("prev"));
 btnNext.addEventListener("click", () => changeSlide("next"));
 
@@ -279,7 +283,6 @@ function setAutoPlay() {
 function setOptions() {
   FORM.selectedOptions.forEach((option) => {
     if (option.checked) {
-      console.log(option);
       setSelectedOptions(option);
     }
   });
@@ -289,13 +292,13 @@ function setSelectedOptions(option) {
   switch (option.label) {
     case OPTIONS_TYPE.AUTO_PLAY:
       setAutoPlay();
-      return;
+      break;
     case OPTIONS_TYPE.LOOP:
       isLoop = true;
-      return;
+      break;
     case OPTIONS_TYPE.BEHAVIOR:
       setBehavior();
-      return;
+      break;
   }
 }
 
