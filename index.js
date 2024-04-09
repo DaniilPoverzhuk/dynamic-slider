@@ -110,6 +110,10 @@ function setValue(type, value) {
   position = 0;
 }
 
+function setFieldsValue() {
+  FORM.fields.forEach((field) => setValue(field.type, field.value));
+}
+
 function setDefaultValue(type, input) {
   switch (type) {
     case TYPES.SHOW:
@@ -141,7 +145,6 @@ function saveChanges(event) {
   clearInterval(interval); // обнуление setInterval
 
   if (getStatusValidForm()) {
-    FORM.fields.forEach((field) => setValue(field.type, field.value));
     initSlider();
   }
 }
@@ -268,6 +271,7 @@ slidesContainer.addEventListener("touchend", touchEnd);
 slidesContainer.addEventListener("touchmove", touchMove);
 
 function initSlider() {
+  setFieldsValue();
   deletePrevSlides();
   createSlides();
   checkButtons();
