@@ -1,8 +1,8 @@
 import { TYPES, OPTIONS_TYPE, OPTIONS } from "./constants.js";
-
 import { getPropertyValue, getRandomColor } from "./utils.js";
 
-let amountSlides = 6;
+let defaultAmountSlides = 6;
+let amountSlides = 6; // Может изменяться при опции loop;
 let showSlides = 3;
 let swipeSlides = 2;
 
@@ -140,7 +140,7 @@ function setErrors() {
 }
 
 function saveChanges(event) {
-  event.preventDefault();
+  event?.preventDefault();
 
   clearInterval(interval); // обнуление setInterval
 
@@ -151,6 +151,8 @@ function saveChanges(event) {
 
 function toggleOption(idx) {
   const item = OPTIONS[idx];
+
+  console.log(item);
 
   FORM.selectedOptions = FORM.selectedOptions.map((option) => {
     if (option.label === item) {
@@ -341,27 +343,75 @@ function changePosition(type) {
   if (type === "prev") changePositionByPrev();
 }
 
-// Начал делать фичу - loop
+function removeSlides() {
+  console.log("remove slides");
+  slides.splice(0, swipeSlides);
+
+  for (let i = 0; i < swipeSlides; i++) {
+    if (i === swipeSlides) break;
+    const slide = slidesContainer.children[i];
+
+    slide.style.minWidth = "0px";
+
+    setTimeout(() => {
+      slidesContainer.removeChild(slide);
+    }, 400);
+  }
+
+  numberCurrentSlide = showSlides + swipeSlides;
+}
+
+function addSlides() {
+  const length =
+    amountSlides - numberCurrentSlide < 0
+      ? swipeSlides
+      : amountSlides - numberCurrentSlide;
+
+  for (let i = 0; i < length; i++) {
+    const content = amountSlides - numberCurrentSlide || amountSlides;
+
+    slidesContainer.appendChild(createSlide(slideWidth, content));
+  }
+
+  slides = [...document.querySelectorAll(".slide")];
+}
 
 function changePositionByNext() {
+  const expectedIndexLastSlide = numberCurrentSlide + swipeSlides;
+
+  if (isLoop) {
+    numberCurrentSlide =
+      expectedIndexLastSlide > amountSlides
+        ? expectedIndexLastSlide % amountSlides
+        : expectedIndexLastSlide;
+
+    const isNeedRemoveSlides = showSlides + swipeSlides < numberCurrentSlide;
+    position -= isNeedRemoveSlides ? 0 : step;
+
+    console.log(numberCurrentSlide);
+
+    if (amountSlides - numberCurrentSlide < swipeSlides) {
+      addSlides();
+      setOptions();
+    }
+
+    if (isNeedRemoveSlides) {
+      return removeSlides();
+    }
+    return;
+  }
+
   if (numberCurrentSlide === amountSlides) {
     numberCurrentSlide = showSlides;
     return (position = 0);
   }
 
-  const expectedNumberSlide = numberCurrentSlide + swipeSlides;
-
-  if (expectedNumberSlide <= amountSlides || isLoop) {
-    if (expectedNumberSlide > amountSlides) {
-      amountSlides *= 2;
-      numberCurrentSlide = (amountSlides - showSlides) % swipeSlides;
-      position -= step;
-      return createSlides();
-    }
-
+  if (expectedIndexLastSlide <= amountSlides) {
     numberCurrentSlide += swipeSlides;
     return (position -= step);
   }
+
+  // Если в следующем шаге элементов будет меньше чем swipeSlides, то отрабатывает ->
 
   const availableSwipes = amountSlides - numberCurrentSlide;
 
@@ -395,7 +445,9 @@ function changeSlide(type) {
 
 function createSlides() {
   for (let idx = 0; idx < amountSlides; idx++) {
-    const slide = createSlide(slideWidth, idx + 1);
+    const content = (idx + 1) % defaultAmountSlides || defaultAmountSlides;
+    const slide = createSlide(slideWidth, content);
+
     slidesContainer.appendChild(slide);
   }
 

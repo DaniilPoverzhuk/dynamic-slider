@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="	https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    />
     <link rel="stylesheet" href="./index.css" />
     <script src="./index.js" type="module" defer></script>
     <title>Slider npm package</title>
@@ -14,47 +18,43 @@
           <label class="slider-form__field" data-type="show">
             <p class="error"></p>
             <span class="label">Number of displayed items</span>
-            <input type="number" />
+            <input type="number" class="form-control" />
           </label>
           <label class="slider-form__field" data-type="swipe">
             <p class="error"></p>
             <span class="label">Number of swipe items</span>
-            <input type="number" />
+            <input type="number" class="form-control" />
           </label>
           <label class="slider-form__field" data-type="amount">
             <p class="error"></p>
             <span class="label">Number of items</span>
-            <input type="number" />
+            <input type="number" class="form-control" />
           </label>
         </div>
         <div class="slider-form__abilities">
           <ul class="slider-form__list">
-            <li class="slider-form__list-item">
-              <label>
-                <input type="checkbox" />
-                <span class="slider-form__list-label">Auto-play</span>
+            <li class="slider-form__list-item form-check">
+              <input class="form-check-input" type="checkbox" id="auto-play" />
+              <label class="form-check-label" for="auto-play">
+                Auto-play
               </label>
             </li>
-            <li class="slider-form__list-item">
-              <label>
-                <input type="checkbox" />
-                <span class="slider-form__list-label">Loop</span>
-              </label>
+            <li class="slider-form__list-item form-check">
+              <input class="form-check-input" type="checkbox" id="loop" />
+              <label class="form-check-label" for="loop"> Loop </label>
             </li>
-            <li class="slider-form__list-item">
-              <label>
-                <input type="checkbox" />
-                <span class="slider-form__list-label">Behavior</span>
-              </label>
+            <li class="slider-form__list-item form-check">
+              <input class="form-check-input" type="checkbox" id="behavior" />
+              <label class="form-check-label" for="behavior"> Behavior </label>
             </li>
           </ul>
-          <button class="slider-form__button">Save</button>
+          <button class="btn btn-primary slider-form__button">Save</button>
         </div>
       </form>
       <div class="slides"></div>
       <div class="slider-buttons">
-        <button class="slider-button prev">prev</button>
-        <button class="slider-button next">next</button>
+        <button class="btn btn-primary slider-button prev">Prev</button>
+        <button class="btn btn-primary slider-button next">Next</button>
       </div>
     </div>
   </body>
