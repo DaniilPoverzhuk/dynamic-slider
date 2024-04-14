@@ -47,8 +47,10 @@ const FORM = {
 
 btnSave.addEventListener("click", saveChanges);
 
-options.forEach((option, idx) =>
-  option.addEventListener("change", () => toggleOption(idx))
+options.forEach((option) =>
+  option.addEventListener("change", () =>
+    toggleOption(option.textContent.toLowerCase().trim())
+  )
 );
 
 // form
@@ -149,13 +151,9 @@ function saveChanges(event) {
   }
 }
 
-function toggleOption(idx) {
-  const item = OPTIONS[idx];
-
-  console.log(item);
-
+function toggleOption(selected) {
   FORM.selectedOptions = FORM.selectedOptions.map((option) => {
-    if (option.label === item) {
+    if (option.label === selected) {
       option.checked = !option.checked;
     }
 
