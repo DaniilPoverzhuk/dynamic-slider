@@ -443,7 +443,7 @@ function changeSlide(type) {
 
 function createSlides() {
   for (let idx = 0; idx < amountSlides; idx++) {
-    const content = (idx + 1) % defaultAmountSlides || defaultAmountSlides;
+    const content = idx + 1;
     const slide = createSlide(slideWidth, content);
 
     slidesContainer.appendChild(slide);
