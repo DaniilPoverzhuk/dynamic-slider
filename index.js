@@ -1,4 +1,4 @@
-import { TYPES, OPTIONS_TYPE, OPTIONS } from "./constants.js";
+import { TYPES, OPTIONS_TYPE } from "./constants.js";
 import { getPropertyValue, getRandomColor } from "./utils.js";
 
 let defaultAmountSlides = 6;

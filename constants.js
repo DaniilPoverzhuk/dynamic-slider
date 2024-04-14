@@ -9,5 +9,3 @@ export const OPTIONS_TYPE = {
   LOOP: "loop",
   BEHAVIOR: "behavior",
 };
-
-export const OPTIONS = ["auto-play", "loop", "behavior"];
